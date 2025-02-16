@@ -10,6 +10,27 @@ const CreditPackage = new EntitySchema({
       generated: "uuid",
       nullable: false,
     },
+    name: {
+      type: "varchar",
+      length: 50,
+      unique: true,
+      nullable: false,
+    },
+    credit_amount: {
+      type: "integer",
+      nullable: false,
+    },
+    price: {
+      type: "numeric",
+      precision: 10,
+      scale: 2,
+      nullable: false,
+    },
+    created_at: { 
+      type: "timestamp",
+      nullable: false,
+      createDate: true,
+    }
   },
 })
 
