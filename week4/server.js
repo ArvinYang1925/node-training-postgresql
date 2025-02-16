@@ -7,7 +7,7 @@ function isUndefined(value) {
   return value === undefined;
 }
 
-function isNotValidSting(value) {
+function isNotValidString(value) {
   return typeof value !== "string" || value.trim().length === 0 || value === "";
 }
 
@@ -56,7 +56,7 @@ const requestListener = async (req, res) => {
         const { name, credit_amount, price } = JSON.parse(body);
         if (
           isUndefined(name) ||
-          isNotValidSting(name) ||
+          isNotValidString(name) ||
           isUndefined(credit_amount) ||
           isNotValidInteger(credit_amount) ||
           isUndefined(price) ||
@@ -113,7 +113,7 @@ const requestListener = async (req, res) => {
   ) {
     try {
       const creditPackageId = req.url.split("/").pop();
-      if (isUndefined(creditPackageId) || isNotValidSting(creditPackageId) || isNotValidUUID(creditPackageId)) {
+      if (isUndefined(creditPackageId) || isNotValidString(creditPackageId) || isNotValidUUID(creditPackageId)) {
         res.writeHead(400, headers)
         res.write(JSON.stringify({
           status: "failed",
@@ -162,7 +162,7 @@ const requestListener = async (req, res) => {
     req.on('end', async () => {
       try {
         const {name} = JSON.parse(body)
-        if (isUndefined(name) || isNotValidSting(name)) {
+        if (isUndefined(name) || isNotValidString(name)) {
           res.writeHead(400, headers);
           res.write(
             JSON.stringify({
@@ -209,7 +209,7 @@ const requestListener = async (req, res) => {
   } else if (req.url.startsWith("/api/coaches/skill/") && req.method === "DELETE") {
     try {
       const skillId = req.url.split("/").pop()
-      if (isUndefined(skillId) || isNotValidSting(skillId) || isNotValidUUID(skillId)) {
+      if (isUndefined(skillId) || isNotValidString(skillId) || isNotValidUUID(skillId)) {
         res.writeHead(400, headers)
         res.write(JSON.stringify({
           status: "failed",
