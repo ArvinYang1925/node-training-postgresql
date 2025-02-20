@@ -5,6 +5,10 @@ const pinoHttp = require('pino-http')
 
 const logger = require('./utils/logger')('App')
 const creditPackageRouter = require('./routes/creditPackage')
+const skillRouter = require('./routes/skill')
+const usersRouter = require('./routes/users')
+const adminRouter = require('./routes/admin')
+const coachesRouter = require('./routes/coaches')
 
 const app = express()
 app.use(cors())
@@ -26,6 +30,21 @@ app.get('/healthcheck', (req, res) => {
   res.send('OK')
 })
 app.use('/api/credit-package', creditPackageRouter)
+app.use('/api/coaches/skill', skillRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/admin', adminRouter)
+app.use('/api/coaches', coachesRouter)
+
+// 修改：增加 JSON 解析錯誤的特殊處理
+// app.use((err, req, res, next) => {
+//   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+//     return res.status(400).json({
+//       status: 'failed',
+//       message: 'JSON 格式錯誤'
+//     });
+//   }
+//   next(err);
+// });
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
