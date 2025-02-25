@@ -9,6 +9,7 @@ const skillRouter = require("./routes/skill");
 const usersRouter = require("./routes/users");
 const adminRouter = require("./routes/admin");
 const coachesRouter = require("./routes/coaches");
+const coursesRouter = require("./routes/courses");
 
 const app = express();
 app.use(cors());
@@ -36,6 +37,7 @@ app.use("/api/coaches/skill", skillRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/coaches", coachesRouter);
+app.use("/api/courses", coursesRouter);
 
 // 修改：增加 JSON 解析錯誤的特殊處理
 // app.use((err, req, res, next) => {

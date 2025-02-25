@@ -1,56 +1,53 @@
 const { EntitySchema } = require("typeorm");
 
 module.exports = new EntitySchema({
-  name: "Course",
-  tableName: "COURSE",
+  name: "CourseBooking",
+  tableName: "COURSE_BOOKING",
   columns: {
     id: {
       primary: true,
       type: "uuid",
       generated: "uuid",
+      nullable: false,
     },
     user_id: {
       type: "uuid",
       nullable: false,
     },
-    skill_id: {
+    course_id: {
       type: "uuid",
       nullable: false,
     },
-    name: {
-      type: "varchar",
-      length: 100,
-      nullable: false,
-    },
-    description: {
-      type: "text",
-      nullable: false,
-    },
-    start_at: {
-      type: "timestamp",
-      nullable: false,
-    },
-    end_at: {
-      type: "timestamp",
-      nullable: false,
-    },
-    max_participants: {
-      type: "integer",
-      nullable: false,
-    },
-    meeting_url: {
-      type: "varchar",
-      length: 2048,
-      nullable: false,
-    },
-    created_at: {
+    booking_at: {
       type: "timestamp",
       createDate: true,
       nullable: false,
     },
-    updated_at: {
+    // status: {
+    //   type: "varchar",
+    //   length: 20,
+    //   nullable: false,
+    // },
+    join_at: {
       type: "timestamp",
-      updateDate: true,
+      nullable: true,
+    },
+    leave_at: {
+      type: "timestamp",
+      nullable: true,
+    },
+    cancelled_at: {
+      type: "timestamp",
+      nullable: true,
+    },
+    cancellation_reason: {
+      type: "varchar",
+      length: 255,
+      nullable: true,
+    },
+    created_at: {
+      type: "timestamp",
+      createDate: true,
       nullable: false,
     },
   },
@@ -61,16 +58,16 @@ module.exports = new EntitySchema({
       joinColumn: {
         name: "user_id",
         referencedColumnName: "id",
-        foreignKeyConstraintName: "courses_user_id_fk",
+        foreignKeyConstraintName: "course_booking_user_id_fk",
       },
     },
-    Skill: {
-      target: "Skill",
+    Course: {
+      target: "Course",
       type: "many-to-one",
       joinColumn: {
-        name: "skill_id",
+        name: "course_id",
         referencedColumnName: "id",
-        foreignKeyConstraintName: "courses_skill_id_fk",
+        foreignKeyConstraintName: "course_booking_course_id_fk",
       },
     },
   },
