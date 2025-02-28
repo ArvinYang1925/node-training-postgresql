@@ -8,7 +8,7 @@ const logger = require("../utils/logger")("User");
 
 const { generateJWT } = require("../utils/jwtUtils");
 const isAuth = require("../middlewares/isAuth");
-
+const appError = require("../utils/appError");
 const {
   isUndefined,
   isNotValidString,
@@ -31,21 +31,14 @@ router.post("/signup", async (req, res, next) => {
       isNotValidString(password)
     ) {
       logger.warn("欄位未填寫正確");
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
     if (!isValidPassword(password)) {
       logger.warn(
         "建立使用者錯誤: 密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"
       );
-      res.status(400).json({
-        status: "failed",
-        message:
-          "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字",
-      });
+      next(appError(400, "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"));
       return;
     }
 
@@ -58,10 +51,7 @@ router.post("/signup", async (req, res, next) => {
     });
     if (existingUser) {
       logger.warn("建立使用者錯誤: Email 已被使用");
-      res.status(409).json({
-        status: "failed",
-        message: "Email 已被使用",
-      });
+      next(appError(409, "Email 已被使用"));
       return;
     }
 
@@ -103,21 +93,14 @@ router.post("/login", async (req, res, next) => {
       isNotValidString(password)
     ) {
       logger.warn("欄位未填寫正確");
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
     if (!isValidPassword(password)) {
       logger.warn(
         "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"
       );
-      res.status(400).json({
-        status: "failed",
-        message:
-          "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字",
-      });
+      next(appError(400, "密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字"));
       return;
     }
     // 用 Email 來查詢資料庫是否有使用者
@@ -129,20 +112,14 @@ router.post("/login", async (req, res, next) => {
       },
     });
     if (!existingUser) {
-      res.status(400).json({
-        status: "failed",
-        message: "使用者不存在或密碼輸入錯誤",
-      });
+      next(appError(400, "使用者不存在或密碼輸入錯誤"));
       return;
     }
     logger.info(`使用者資料: ${JSON.stringify(existingUser)}`);
     // 比對密碼是否正確
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (!isMatch) {
-      res.status(400).json({
-        status: "failed",
-        message: "使用者不存在或密碼輸入錯誤",
-      });
+      next(appError(400, "使用者不存在或密碼輸入錯誤"));
       return;
     }
 
@@ -195,10 +172,7 @@ router.put("/profile", isAuth, async (req, res, next) => {
     // 驗證欄位
     if (isUndefined(name) || isNotValidString(name)) {
       logger.warn("欄位未填寫正確");
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
     // 查詢使用者
@@ -208,10 +182,7 @@ router.put("/profile", isAuth, async (req, res, next) => {
       where: { id },
     });
     if (existingUser.name === name) {
-      res.status(400).json({
-        status: "failed",
-        message: "使用者名稱未變更",
-      });
+      next(appError(400, "使用者名稱未變更"));
       return;
     }
     // 更新使用者資料
@@ -225,10 +196,7 @@ router.put("/profile", isAuth, async (req, res, next) => {
       }
     );
     if (updatedResult.affected === 0) {
-      res.status(400).json({
-        status: "failed",
-        message: "更新使用者資料失敗",
-      });
+      next(appError(400, "更新使用者資料失敗"));
       return;
     }
     // 取得更新後的結果

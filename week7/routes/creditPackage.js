@@ -73,10 +73,7 @@ router.post("/:creditPackageId", auth, async (req, res, next) => {
       where: { id: creditPackageId },
     });
     if (!existingCreditPackage) {
-      res.status(400).json({
-        status: "failed",
-        message: "ID錯誤",
-      });
+      next(appError(400, "ID錯誤"));
       return;
     }
     // 購買方案實作
@@ -108,20 +105,14 @@ router.delete("/:creditPackageId", async (req, res, next) => {
       isNotValidString(creditPackageId) ||
       isNotValidUUID(creditPackageId)
     ) {
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
     const result = await dataSource
       .getRepository("CreditPackage")
       .delete(creditPackageId);
     if (result.affected === 0) {
-      res.status(400).json({
-        status: "failed",
-        message: "ID錯誤",
-      });
+      next(appError(400, "ID錯誤"));
       return;
     }
     res.status(200).json({

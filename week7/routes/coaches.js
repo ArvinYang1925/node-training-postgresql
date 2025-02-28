@@ -3,17 +3,14 @@ const express = require("express");
 const router = express.Router();
 const { dataSource } = require("../db/data-source");
 const logger = require("../utils/logger")("Coach");
-
+const appError = require("../utils/appError");
 const { isNotValidString } = require("../utils/validUtils");
 
 router.get("/", async (req, res, next) => {
   try {
     let { per, page } = req.query;
     if (isNotValidString(per) || isNotValidString(page)) {
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
 
@@ -61,10 +58,7 @@ router.get("/:coachId", async (req, res, next) => {
   try {
     const { coachId } = req.params;
     if (isNotValidString(coachId)) {
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
     // 確認教練是否存在
@@ -75,10 +69,7 @@ router.get("/:coachId", async (req, res, next) => {
       },
     });
     if (!existingCoach) {
-      res.status(400).json({
-        status: "failed",
-        message: "找不到該教練",
-      });
+      next(appError(400, "找不到該教練"));
       return;
     }
     const userRepo = dataSource.getRepository("User");

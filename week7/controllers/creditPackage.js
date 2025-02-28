@@ -6,6 +6,7 @@ const {
   isNotValidInteger,
   isNotValidUUID,
 } = require("../utils/validUtils");
+const appError = require("../utils/appError");
 
 // async function getAll(req, res, next) {
 //   try {

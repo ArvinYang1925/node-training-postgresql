@@ -7,6 +7,7 @@ const { dataSource } = require("../db/data-source");
 const Skill = require("../entities/Skill");
 const logger = require("../utils/logger")("Course");
 const isAuth = require("../middlewares/isAuth");
+const appError = require("../utils/appError");
 
 // 取得課程列表
 router.get("/", async (req, res, next) => {
@@ -65,10 +66,7 @@ router.post("/:courseId", isAuth, async (req, res, next) => {
       },
     });
     if (!course) {
-      res.status(400).json({
-        status: "failed",
-        message: "ID錯誤",
-      });
+      next(appError(400, "ID錯誤"));
       return;
     }
     // 檢查使用者是否已經報名過課程
@@ -80,10 +78,7 @@ router.post("/:courseId", isAuth, async (req, res, next) => {
       },
     });
     if (userCourseBooking) {
-      res.status(400).json({
-        status: "failed",
-        message: "已經報名過此課程",
-      });
+      next(appError(400, "已經報名過此課程"));
       return;
     }
 
@@ -107,16 +102,10 @@ router.post("/:courseId", isAuth, async (req, res, next) => {
       },
     });
     if (userUsedCredit >= userCredit) {
-      res.status(400).json({
-        status: "failed",
-        message: "已無可使用堂數",
-      });
+      next(appError(400, "已無可使用堂數"));
       return;
     } else if (courseBookingCount >= course.max_participants) {
-      res.status(400).json({
-        status: "failed",
-        message: "已達最大參加人數，無法參加",
-      });
+      next(appError(400, "已達最大參加人數，無法參加"));
       return;
     }
     const newCourseBooking = await courseBookingRepo.create({
@@ -149,10 +138,7 @@ router.delete("/:courseId", isAuth, async (req, res, next) => {
       },
     });
     if (!userCourseBooking) {
-      res.status(400).json({
-        status: "failed",
-        message: "ID錯誤",
-      });
+      next(appError(400, "ID錯誤"));
       return;
     }
     // 取消報名課程
@@ -167,10 +153,7 @@ router.delete("/:courseId", isAuth, async (req, res, next) => {
       }
     );
     if (updateResult.affected === 0) {
-      res.status(400).json({
-        status: "failed",
-        message: "取消失敗",
-      });
+      next(appError(400, "取消失敗"));
       return;
     }
     res.status(200).json({
