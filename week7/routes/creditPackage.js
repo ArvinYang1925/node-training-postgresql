@@ -10,6 +10,9 @@ const {
   isNotValidInteger,
   isNotValidUUID,
 } = require("../utils/validUtils");
+const appError = require("../utils/appError");
+
+const creditPackage = require("../controllers/creditPackage");
 
 const auth = require("../middlewares/auth")({
   secret: config.get("secret").jwtSecret,
@@ -17,20 +20,7 @@ const auth = require("../middlewares/auth")({
   logger,
 });
 
-router.get("/", async (req, res, next) => {
-  try {
-    const packages = await dataSource.getRepository("CreditPackage").find({
-      select: ["id", "name", "credit_amount", "price"],
-    });
-    res.status(200).json({
-      status: "success",
-      data: packages,
-    });
-  } catch (error) {
-    logger.error(error);
-    next(error);
-  }
-});
+router.get("/", creditPackage.getAll);
 
 router.post("/", async (req, res, next) => {
   try {
@@ -43,10 +33,7 @@ router.post("/", async (req, res, next) => {
       isUndefined(price) ||
       isNotValidInteger(price)
     ) {
-      res.status(400).json({
-        status: "failed",
-        message: "欄位未填寫正確",
-      });
+      next(appError(400, "欄位未填寫正確"));
       return;
     }
     const creditPackageRepo = await dataSource.getRepository("CreditPackage");
@@ -56,10 +43,7 @@ router.post("/", async (req, res, next) => {
       },
     });
     if (existPackage.length > 0) {
-      res.status(409).json({
-        status: "failed",
-        message: "資料重複",
-      });
+      next(appError(409, "資料重複"));
       return;
     }
     const newPackage = await creditPackageRepo.create({

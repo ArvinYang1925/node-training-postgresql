@@ -6,11 +6,7 @@ const config = require("../config/index");
 const { dataSource } = require("../db/data-source");
 const Skill = require("../entities/Skill");
 const logger = require("../utils/logger")("Course");
-const auth = require("../middlewares/auth")({
-  secret: config.get("secret").jwtSecret,
-  userRepository: dataSource.getRepository("User"),
-  logger,
-});
+const isAuth = require("../middlewares/isAuth");
 
 // 取得課程列表
 router.get("/", async (req, res, next) => {
@@ -57,7 +53,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // 報名課程
-router.post("/:courseId", auth, async (req, res, next) => {
+router.post("/:courseId", isAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
     const { courseId } = req.params;
@@ -139,7 +135,7 @@ router.post("/:courseId", auth, async (req, res, next) => {
 });
 
 // 取消課程
-router.delete("/:courseId", auth, async (req, res, next) => {
+router.delete("/:courseId", isAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
     const { courseId } = req.params;

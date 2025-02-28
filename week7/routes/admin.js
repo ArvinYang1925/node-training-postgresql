@@ -4,11 +4,7 @@ const router = express.Router();
 const config = require("../config/index");
 const { dataSource } = require("../db/data-source");
 const logger = require("../utils/logger")("Admin");
-const auth = require("../middlewares/auth")({
-  secret: config.get("secret").jwtSecret,
-  userRepository: dataSource.getRepository("User"),
-  logger,
-});
+const isAuth = require("../middlewares/isAuth");
 
 const isCoach = require("../middlewares/isCoach");
 
@@ -20,7 +16,7 @@ const {
 } = require("../utils/validUtils");
 
 // 新增教練課程資料
-router.post("/coaches/courses", auth, isCoach, async (req, res, next) => {
+router.post("/coaches/courses", isAuth, isCoach, async (req, res, next) => {
   try {
     const {
       user_id: userId,
@@ -114,7 +110,7 @@ router.post("/coaches/courses", auth, isCoach, async (req, res, next) => {
 // 編輯教練課程資料
 router.put(
   "/coaches/courses/:courseId",
-  auth,
+  isAuth,
   isCoach,
   async (req, res, next) => {
     try {

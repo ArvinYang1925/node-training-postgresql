@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// 老師上課版本
 const PERMISSION_DENIED_STATUS_CODE = 401;
 const FailedMessageMap = {
   expired: "Token 已過期",

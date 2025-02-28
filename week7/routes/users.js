@@ -5,12 +5,9 @@ const router = express.Router();
 const config = require("../config/index");
 const { dataSource } = require("../db/data-source");
 const logger = require("../utils/logger")("User");
-const generateJWT = require("../utils/generateJWT");
-const auth = require("../middlewares/auth")({
-  secret: config.get("secret").jwtSecret,
-  userRepository: dataSource.getRepository("User"),
-  logger,
-});
+
+const { generateJWT } = require("../utils/jwtUtils");
+const isAuth = require("../middlewares/isAuth");
 
 const {
   isUndefined,
@@ -126,7 +123,7 @@ router.post("/login", async (req, res, next) => {
     // 用 Email 來查詢資料庫是否有使用者
     const userRepo = dataSource.getRepository("User");
     const existingUser = await userRepo.findOne({
-      select: ["id", "name", "password"],
+      select: ["id", "name", "password", "role"],
       where: {
         email: email,
       },
@@ -148,14 +145,12 @@ router.post("/login", async (req, res, next) => {
       });
       return;
     }
+
     // 通過上述驗證後，產生 jwt token
-    const token = await generateJWT(
-      { id: existingUser.id, role: existingUser.role },
-      config.get("secret.jwtSecret"),
-      {
-        expiresIn: config.get("secret.jwtExpiresDay"),
-      }
-    );
+    const token = generateJWT({
+      id: existingUser.id,
+      role: existingUser.role,
+    });
     res.status(201).json({
       status: "success",
       data: {
@@ -172,7 +167,7 @@ router.post("/login", async (req, res, next) => {
 });
 
 // 取得個人資料
-router.get("/profile", auth, async (req, res, next) => {
+router.get("/profile", isAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
     const userRepo = dataSource.getRepository("User");
@@ -193,7 +188,7 @@ router.get("/profile", auth, async (req, res, next) => {
 });
 
 // 更新個人資料
-router.put("/profile", auth, async (req, res, next) => {
+router.put("/profile", isAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
     const { name } = req.body;
