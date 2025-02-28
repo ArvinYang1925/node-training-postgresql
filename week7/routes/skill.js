@@ -1,85 +1,13 @@
 const express = require("express");
 
 const router = express.Router();
-const { dataSource } = require("../db/data-source");
-const logger = require("../utils/logger")("Skill");
-const {
-  isUndefined,
-  isNotValidString,
-  isNotValidUUID,
-} = require("../utils/validUtils");
-const appError = require("../utils/appError");
 
-router.get("/", async (req, res, next) => {
-  try {
-    const skills = await dataSource.getRepository("Skill").find({
-      select: ["id", "name"],
-    });
-    res.status(200).json({
-      status: "success",
-      data: skills,
-    });
-  } catch (error) {
-    logger.error(error);
-    next(error);
-  }
-});
+const skill = require("../controllers/skill");
 
-router.post("/", async (req, res, next) => {
-  try {
-    const { name } = req.body;
-    if (isUndefined(name) || isNotValidString(name)) {
-      next(appError(400, "欄位未填寫正確"));
-      return;
-    }
-    // 檢查是否有重複名稱的 skill
-    const skillRepo = dataSource.getRepository("Skill");
-    const existSkill = await skillRepo.findOne({
-      where: {
-        name,
-      },
-    });
-    if (existSkill) {
-      next(appError(409, "資料重複"));
-      return;
-    }
-    const newSkill = skillRepo.create({
-      name,
-    });
-    const result = await skillRepo.save(newSkill);
-    res.status(200).json({
-      status: "success",
-      data: result,
-    });
-  } catch (error) {
-    logger.error(error);
-    next(error);
-  }
-});
+router.get("/", skill.getAll);
 
-router.delete("/:skillId", async (req, res, next) => {
-  try {
-    const skillId = req.params.skillId;
-    if (
-      isUndefined(skillId) ||
-      isNotValidString(skillId) ||
-      isNotValidUUID(skillId)
-    ) {
-      next(appError(400, "ID錯誤"));
-      return;
-    }
-    const result = await dataSource.getRepository("Skill").delete(skillId);
-    if (result.affected === 0) {
-      next(appError(400, "ID錯誤"));
-      return;
-    }
-    res.status(200).json({
-      status: "success",
-    });
-  } catch (error) {
-    logger.error(error);
-    next(error);
-  }
-});
+router.post("/", skill.post);
+
+router.delete("/:skillId", skill.deleteSkill);
 
 module.exports = router;

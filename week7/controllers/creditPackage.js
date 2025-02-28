@@ -38,6 +38,110 @@ const getAll = async (req, res, next) => {
   }
 };
 
+const post = async (req, res, next) => {
+  try {
+    const { name, credit_amount, price } = req.body;
+    if (
+      isUndefined(name) ||
+      isNotValidString(name) ||
+      isUndefined(credit_amount) ||
+      isNotValidInteger(credit_amount) ||
+      isUndefined(price) ||
+      isNotValidInteger(price)
+    ) {
+      next(appError(400, "欄位未填寫正確"));
+      return;
+    }
+    const creditPackageRepo = await dataSource.getRepository("CreditPackage");
+    const existPackage = await creditPackageRepo.find({
+      where: {
+        name: name,
+      },
+    });
+    if (existPackage.length > 0) {
+      next(appError(409, "資料重複"));
+      return;
+    }
+    const newPackage = await creditPackageRepo.create({
+      name,
+      credit_amount,
+      price,
+    });
+    const result = await creditPackageRepo.save(newPackage);
+    res.status(200).json({
+      status: "success",
+      data: result,
+    });
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+const postUserBuy = async (req, res, next) => {
+  try {
+    const { id, role } = req.user;
+    const { creditPackageId } = req.params;
+    // 驗證傳入的購買方案 id
+    const creditPackageRepo = dataSource.getRepository("CreditPackage");
+    const existingCreditPackage = await creditPackageRepo.findOne({
+      where: { id: creditPackageId },
+    });
+    if (!existingCreditPackage) {
+      next(appError(400, "ID錯誤"));
+      return;
+    }
+    // 購買方案實作
+    const creditPurchaseRepo = dataSource.getRepository("CreditPurchase");
+    const newPurchase = creditPurchaseRepo.create({
+      user_id: id,
+      credit_package_id: creditPackageId,
+      purchased_credits: existingCreditPackage.credit_amount,
+      price_paid: existingCreditPackage.price,
+      purchase_at: new Date().toISOString(),
+    });
+    await creditPurchaseRepo.save(newPurchase);
+
+    res.status(200).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+}
+
+const deletePackage = async (req, res, next) => {
+  try {
+    const creditPackageId = req.params.creditPackageId;
+    if (
+      isUndefined(creditPackageId) ||
+      isNotValidString(creditPackageId) ||
+      isNotValidUUID(creditPackageId)
+    ) {
+      next(appError(400, "欄位未填寫正確"));
+      return;
+    }
+    const result = await dataSource
+      .getRepository("CreditPackage")
+      .delete(creditPackageId);
+    if (result.affected === 0) {
+      next(appError(400, "ID錯誤"));
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+    });
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+}
+
 module.exports = {
   getAll,
+  post,
+  postUserBuy,
+  deletePackage,
 };
