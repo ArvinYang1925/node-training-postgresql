@@ -50,5 +50,10 @@ module.exports = new EntitySchema({
         foreignKeyConstraintName: "coach_user_id_fk", // 外鍵約束名稱
       },
     },
+    CoachLinkSkill: {
+      target: "CoachLinkSkill",
+      type: "one-to-many",
+      inverseSide: "Coach",
+    },
   },
 });

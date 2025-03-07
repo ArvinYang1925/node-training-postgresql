@@ -9,4 +9,5 @@ module.exports = {
     process.env.DB_ENABLE_SSL === "true"
       ? { rejectUnauthorized: false }
       : false,
+  logging: true, // 啟用日誌
 };

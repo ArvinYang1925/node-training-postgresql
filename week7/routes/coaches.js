@@ -10,4 +10,7 @@ router.get("/", coach.getCoaches);
 // 取得教練詳細資料
 router.get("/:coachId", coach.getCoachDetail);
 
+// 取得指定教練課程列表
+router.get("/:coachId/courses", coach.getCoachCourses);
+
 module.exports = router;

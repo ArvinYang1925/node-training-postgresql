@@ -2,7 +2,7 @@ const { dataSource } = require("../db/data-source");
 const logger = require("../utils/logger")("CoachesController");
 
 const appError = require("../utils/appError");
-const { isNotValidString } = require("../utils/validUtils");
+const { isUndefined, isNotValidString } = require("../utils/validUtils");
 
 const getCoaches = async (req, res, next) => {
   try {
@@ -102,7 +102,74 @@ const getCoachDetail = async (req, res, next) => {
   }
 };
 
+const getCoachCourses = async (req, res, next) => {
+  try {
+    const { coachId } = req.params;
+    if (isUndefined(coachId) || isNotValidString(coachId)) {
+      next(appError(400, "欄位未填寫正確"));
+      return;
+    }
+    const coach = await dataSource.getRepository("Coach").findOne({
+      select: {
+        id: true,
+        user_id: true,
+        User: {
+          name: true,
+        },
+      },
+      where: {
+        id: coachId,
+      },
+      relations: {
+        User: true,
+      },
+    });
+    if (!coach) {
+      logger.warn("找不到該教練");
+      next(appError(400, "找不到該教練"));
+      return;
+    }
+    const courses = await dataSource.getRepository("Course").find({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        start_at: true,
+        end_at: true,
+        max_participants: true,
+        Skill: {
+          name: true,
+        },
+      },
+      where: {
+        user_id: coach.user_id,
+      },
+      relations: {
+        Skill: true,
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: courses.map((course) => ({
+        id: course.id,
+        coach_name: coach.User.name,
+        skill_name: course.Skill.name,
+        name: course.name,
+        description: course.description,
+        start_at: course.start_at,
+        end_at: course.end_at,
+        max_participants: course.max_participants,
+      })),
+    });
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
 module.exports = {
   getCoaches,
   getCoachDetail,
+  getCoachCourses,
 };
